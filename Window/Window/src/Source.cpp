@@ -18,8 +18,8 @@
 /* Additional files */
 #include "Shaders.cpp"
 
-#define SCREEN_WIDTH 900
-#define SCREEN_HEIGHT 550
+constexpr auto SCREEN_WIDTH = 900;
+constexpr auto SCREEN_HEIGHT = 550;
 
 int main(void)
 {
@@ -50,9 +50,9 @@ int main(void)
 
 	float positions[6] =
 	{
-		-0.2f, -0.2f,
-		 0.0f,  0.2f,
-		 0.2f, -0.2f
+		-0.5f, -0.5f,
+		 0.0f,  0.5f,
+		 0.5f, -0.5f
 	};
 	
 	/* buffer ID*/
@@ -74,30 +74,15 @@ int main(void)
 	unsigned int shader = Shaders::CreateShader(source.VertexSource, source.FragmentSource);
 	glUseProgram(shader);
 
-	std::cout << "VERTEX\n" << std::endl;
-	std::cout << source.VertexSource << std::endl;
-
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
-		double value = sin(glfwGetTime()) / 2.0f + 0.5f;
+		float value = sin(glfwGetTime()) / 2.0f + 0.5f;
 		
 		/* Render here */
-		glClearColor(0.2f, 0.3f, (float) sin(glfwGetTime()) / 2.0f + 0.5f, 1.0f);
+		glClearColor(0.231, 0.494, 0.890, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		glm::mat4 transform = glm::mat4(1.0f);
-		transform = glm::translate(transform, glm::vec3(value - 0.6f, 0.0f, 0.6f));
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(sin(glfwGetTime()) / 2, 0.6, 0.8));
-
-		/* update position (transform position) */
-		unsigned int uniTrans = glGetUniformLocation(shader, "transform");
-		glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(transform));
-
-		/* update color */
-		unsigned int uniColor = glGetUniformLocation(shader, "changeColor");
-		glUniform3f(uniColor, 0.8, (float) value, 0.3);
-		
+	
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		/* Swap front and back buffers */

@@ -2,10 +2,10 @@
 #version 330 core
 
 layout(location = 0) in vec4 position;
-uniform mat4 transform;
+
 void main()
 {
-	gl_Position =  transform * position;
+	gl_Position =  position;
 };
 
 #shader fragment
@@ -16,5 +16,5 @@ uniform vec3 changeColor;
 
 void main()
 {
-	color = vec4(changeColor, 0.6);
+	color = vec4(0.847, 0.172, 0.231, 0.6);
 };

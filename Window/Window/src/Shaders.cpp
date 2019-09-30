@@ -25,21 +25,17 @@ public:
 
 	static ShaderProgramSource ParseShader(const std::string& filePath)
 	{
-		/* open file reading stream */
 		std::fstream stream(filePath);
 
-		/* assigned value to the different states*/
 		enum class ShaderType
 		{
 			NONE = -1, VERTEX = 0, FRAGMENT = 1
 		};
 
-		/* initialization */
 		std::string line;
 		std::stringstream ss[2];
 		ShaderType type = ShaderType::NONE;
 
-		/* line reading */
 		while (getline(stream, line))
 		{
 			if (line.find("#shader") != std::string::npos)
@@ -55,12 +51,12 @@ public:
 			}
 			else
 			{
-				/* push the content to ss[] */
-				ss[(int) type] << line << "\n";
+				if(type != ShaderType::NONE)
+					ss[(int)type] << line << "\n";
 			}
 		}
 
-		return { ss[0].str(), ss[1].str() };
+		return {ss[0].str(), ss[1].str()};
 	}
 
 	static unsigned int CompileShader(unsigned int type, const std::string& source)
