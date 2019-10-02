@@ -16,5 +16,5 @@ uniform vec3 changeColor;
 
 void main()
 {
-	color = vec4(0.847, 0.172, 0.231, 0.6);
+	color = vec4(0.231, 0.494, 0.890, 0.6);
 };
