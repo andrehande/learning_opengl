@@ -59,6 +59,9 @@ int main(void)
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
+	
+	//monitor's refreshrate
+	glfwSwapInterval(1);
 
 	if (glewInit() != GLEW_OK)
 	{
@@ -76,6 +79,7 @@ int main(void)
 		-0.5f,  0.5f,
 	};
 	
+	//index buffers
 	unsigned int indices[] = {
 		0, 1, 2,
 		2, 3, 0
@@ -111,6 +115,13 @@ int main(void)
 	unsigned int shader = Shaders::CreateShader(source.VertexSource, source.FragmentSource);
 	GLCall(glUseProgram(shader));
 
+	int location = glGetUniformLocation(shader, "u_color");
+	ASSERT(location != -1);
+	
+	float r = 0.0f;
+	float b = 1.0f;
+	float r_increment = 0.05f;
+	float b_increment = -0.05f;
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
@@ -119,8 +130,22 @@ int main(void)
 		/* Render here */
 		//glClearColor(0.231, 0.494, 0.890, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
-	
-		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr));
+
+		GLCall(glUniform4f(location, r, 0.3f, b, 1.0f));
+		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+		if (r > 1.0f)
+			r_increment = -0.01f;
+		else if (r < 0.0f)
+			r_increment = 0.01f;
+
+		if (b > 1.0f)
+			b_increment = -0.1f;
+		else if (b < 0.0f)
+			b_increment = 0.1f;
+
+		r += r_increment;
+		b += b_increment;
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
@@ -130,6 +155,6 @@ int main(void)
 	}
 
 	GLCall(glDeleteProgram(shader));
-	GLCall(glfwTerminate());
+	glfwTerminate();
 	return 0;
 }
