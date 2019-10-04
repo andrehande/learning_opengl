@@ -23,8 +23,8 @@
 #include "Shaders.cpp"
 #include "stb_image.h"
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
+#define SCREEN_WIDTH 900	
+#define SCREEN_HEIGHT 600
 
 #define ASSERT(x) if(!(x)) __debugbreak();
 #define GLCall(x) GLClearError();\
@@ -68,7 +68,7 @@ int main(void)
 	glfwMakeContextCurrent(window);
 	
 	//monitor's refreshrate
-	glfwSwapInterval(1);
+	//glfwSwapInterval(1);
 
 	if (glewInit() != GLEW_OK)
 	{
@@ -125,13 +125,13 @@ int main(void)
 			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 	
-	glm::vec3 cubePositions[1000];
+	glm::vec3 cubePositions[500];
 
 	for (int i = 0; i < sizeof(cubePositions) / sizeof(cubePositions[0]); i++)
 	{
-		float x = rand() % 51 + (-20);
-		float y = rand() % 51 + (-25);
-		float z = rand() % 51 + (-25);
+		float x = rand() % 41 + (-20);
+		float y = rand() % 41 + (-20);
+		float z = rand() % 41 + (-20);
 
 		std::cout << x << ":" << y << ":" << z << "\n";
 
@@ -181,7 +181,7 @@ int main(void)
 	int width, height, nrChannels;
 
 	stbi_set_flip_vertically_on_load(true); 
-	unsigned char* data = stbi_load("crate.png", &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load("res/img/crate.png", &width, &height, &nrChannels, 0);
 	
 	if (data)
 	{
@@ -200,9 +200,9 @@ int main(void)
 	while (!glfwWindowShouldClose(window))
 	{
 		
-		float radius = 25.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;
+		float radius = 5.0f;
+		float camX = sin(glfwGetTime() / 4) * radius;
+		float camZ = cos(glfwGetTime() / 4) * radius;
 		
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
