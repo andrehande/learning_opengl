@@ -1,3 +1,7 @@
+
+#define STB_IMAGE_IMPLEMENTATION
+
+
 /* GLEW*/
 #include <GL/glew.h>
 
@@ -17,6 +21,7 @@
 
 /* Additional files */
 #include "Shaders.cpp"
+#include "stb_image.h"
 
 #define SCREEN_WIDTH 700
 #define SCREEN_HEIGHT 700
@@ -41,6 +46,50 @@ static bool GLLogCall(const char* function, const char* file, int line)
 	return true;
 }
 
+void vertexBufferBinding()
+{
+	unsigned int VBO, VAO, EBO;
+
+	float vertices[] = {
+		// positions          // colors           // texture coords
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+	};
+	unsigned int indices[] = {
+		0, 1, 3, // first triangle
+		1, 2, 3  // second triangle
+	};
+
+	glGenVertexArrays(1, &VAO);
+
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	glBindVertexArray(VAO);
+}
+
 int main(void)
 {
 	GLFWwindow* window;
@@ -59,6 +108,7 @@ int main(void)
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
+	unsigned int texture1;
 	
 	//monitor's refreshrate
 	glfwSwapInterval(1);
@@ -71,90 +121,59 @@ int main(void)
 	/* Prints current openGL version */
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	float positions[] =
-	{
-		-0.5f, -0.5f,
-		 0.5f, -0.5f,
-		 0.5f,  0.5f,
-		-0.5f,  0.5f,
-	};
-	
-	//index buffers
-	unsigned int indices[] = {
-		0, 1, 2,
-		2, 3, 0
-	};
-
-	/* buffer ID*/
-	unsigned int buffer; 
-
-	/* Generate a buffer*/
-	GLCall(glGenBuffers(1, &buffer));
-
-	/* select buffer*/
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-
-	/* Specifies buffer data and size*/
-	GLCall(glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_DYNAMIC_DRAW));
-
-	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0));
-	GLCall(glEnableVertexAttribArray(0));
-	
-	unsigned int ibo;
-
-	/* Generate a buffer*/
-	GLCall(glGenBuffers(1, &ibo));
-
-	/* select buffer*/
-	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-
-	/* Specifies buffer data and size*/
-	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW));
+	vertexBufferBinding();
 
 	Shaders::ShaderProgramSource source = Shaders::ParseShader("res/shaders/Basic_s.shader");
 	unsigned int shader = Shaders::CreateShader(source.VertexSource, source.FragmentSource);
 	GLCall(glUseProgram(shader));
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 
-	int location = glGetUniformLocation(shader, "u_color");
-	ASSERT(location != -1);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
 	
-	float r = 0.0f;
-	float b = 1.0f;
-	float r_increment = 0.05f;
-	float b_increment = -0.05f;
+	// set texture wrapping to GL_REPEAT (default wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+
+	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+	unsigned char* data = stbi_load("crate.png", &width, &height, &nrChannels, 0);
+	
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		std::cout << "Failed to load texture" << std::endl;
+	
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
-		float value = sin(glfwGetTime()) / 2.0f + 0.5f;
-		
-		/* Render here */
-		//glClearColor(0.231, 0.494, 0.890, 1.0);
+		double r = sin(glfwGetTime() * 10) / 2.0f + 0.5f;
 		glClear(GL_COLOR_BUFFER_BIT);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
 
-		GLCall(glUniform4f(location, r, 0.3f, b, 1.0f));
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-
-		if (r > 1.0f)
-			r_increment = -0.01f;
-		else if (r < 0.0f)
-			r_increment = 0.01f;
-
-		if (b > 1.0f)
-			b_increment = -0.1f;
-		else if (b < 0.0f)
-			b_increment = 0.1f;
-
-		r += r_increment;
-		b += b_increment;
-
+		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
-
+	
 		/* Poll for and process events */	
 		glfwPollEvents();
 	}
 
-	GLCall(glDeleteProgram(shader));
 	glfwTerminate();
 	return 0;
 }

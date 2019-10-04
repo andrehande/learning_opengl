@@ -25,4 +25,9 @@
   <ItemGroup>
     <None Include="res\shaders\Basic_s.shader" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
